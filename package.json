@@ -37,7 +37,8 @@
   "repository": "eight04/draggable-list",
   "eslintIgnore": [
     "coverage",
-    "dist"
+    "dist",
+    "docs"
   ],
   "engines": {
     "node": ">=8"
