@@ -86,6 +86,6 @@ e = {
 Changelog
 ---------
 
-* 0.1.0 
+* 0.1.0 (Dec 10, 2021)
 
   - First release.
