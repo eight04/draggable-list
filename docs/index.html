@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <style>
+    li {
+      cursor: grab;
+    }
+    .draggable-list-dragging {
+      cursor: grabbing;
+    }
+    .draggable-list-dragging li {
+      transition: transform .25s ease-in-out;
+    }
+    #demo1 .draggable-list-target {
+      opacity: 0.2;
+      cursor: grabbing;
+    }
+    #demo2 .draggable-list-target {
+      transition: none;
+    }
+  </style>
+  <script src="draggable-list.iife.js"></script>
+</head>
+<body>
+  <h2>Basic</h2>
+  <ul id="demo1">
+    <li>test 1</li>
+    <li>test 2</li>
+    <li>test 3</li>
+    <li>test 4</li>
+    <li>test 5</li>
+    <li>test 6</li>
+    <li>test 7</li>
+    <li>test 8</li>
+    <li>test 9</li>
+    <li>test 10</li>
+  </ul>
+  <script>
+    const ul = document.querySelector("#demo1");
+    new DraggableList(ul);
+    ul.addEventListener('d:dragend', e => {
+      ul.insertBefore(e.detail.dragTarget, e.detail.insertBefore);
+    });
+  </script>
+  <h3>Custom shadow</h3>
+  <ul id="demo2">
+    <li>test 1</li>
+    <li>test 2</li>
+    <li>test 3</li>
+    <li>test 4</li>
+    <li>test 5</li>
+    <li>test 6</li>
+    <li>test 7</li>
+    <li>test 8</li>
+    <li>test 9</li>
+    <li>test 10</li>
+  </ul>
+  <script>
+    {
+      const ul = document.querySelector("#demo2");
+      new DraggableList(ul);
+      ul.addEventListener('d:dragend', e => {
+        ul.insertBefore(e.detail.dragTarget, e.detail.insertBefore);
+        e.detail.dragTarget.style = '';
+      });
+      ul.addEventListener('d:dragmove', e => {
+        e.detail.dragTarget.style.transform = `translateY(${e.detail.currentPos.y - e.detail.startPos.y}px)`;
+      });
+      ul.addEventListener('d:dragstart', e => {
+        e.detail.origin.dataTransfer.setDragImage(new Image, 0, 0);
+      });
+    }
+  </script>
+</body>
+</html>
