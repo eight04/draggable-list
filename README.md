@@ -33,7 +33,7 @@ new DraggableList(ul);
 Compatibility
 -------------
 
-Prebuilt dist is compiled with babel to support Chrome 49.
+Prebuilt dist is compiled with babel to support Chrome 55.
 
 API
 ----
@@ -85,6 +85,11 @@ e = {
 
 Changelog
 ---------
+
+* 0.2.0 (Dec 10, 2021)
+
+  - Fix: catch dragenter & drop events.
+  - Change: now only support Chrome 55+.
 
 * 0.1.0 (Dec 10, 2021)
 
