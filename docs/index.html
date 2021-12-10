@@ -8,14 +8,14 @@
       cursor: grab;
     }
     .draggable-list-dragging {
-      cursor: grabbing;
+      /* this doesn't work with HTML5 drag */
+      /* cursor: grabbing; */
     }
     .draggable-list-dragging li {
       transition: transform .25s ease-in-out;
     }
     #demo1 .draggable-list-target {
       opacity: 0.2;
-      cursor: grabbing;
     }
     #demo2 .draggable-list-target {
       transition: none;
@@ -42,6 +42,9 @@
     new DraggableList(ul);
     ul.addEventListener('d:dragend', e => {
       ul.insertBefore(e.detail.dragTarget, e.detail.insertBefore);
+    });
+    ul.addEventListener('d:dragmove', e => {
+      e.detail.origin.dataTransfer.dropEffect = 'move';
     });
   </script>
   <h3>Custom shadow</h3>
