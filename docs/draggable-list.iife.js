@@ -2,42 +2,55 @@ var DraggableList = (function () {
   'use strict';
 
   /* eslint-env browser */
-  function applyDragMove(list, rects, startIndex, oldY, overIndex, newY) {
-    if (newY > oldY) {
-      for (let i = overIndex; i < list.length; i++) {
-        if (rects[i].top > newY) {
-          break;
-        }
+  const CLS_TRANSFORMED = 'draggable-list-transformed';
+  function posToIndex(rects, startIndex, y, bound) {
+    if (y < rects[0].top && bound) return startIndex;
 
-        if (i < startIndex && rects[i].bottom < newY && list[i].classList.contains('draggable-list-transformed')) {
-          list[i].classList.remove('draggable-list-transformed');
-          list[i].style = '';
-        } else if (i > startIndex && rects[i].top < newY && !list[i].classList.contains('draggable-list-transformed')) {
-          list[i].classList.add('draggable-list-transformed');
-          list[i].style.transform = "translateY(".concat(rects[startIndex].top - rects[startIndex + 1].top, "px)");
-        }
+    for (let i = 0; i < startIndex; i++) {
+      if (rects[i].bottom < y) continue;
+      return i;
+    }
 
-        overIndex = i;
+    if (y > rects[rects.length - 1].bottom && bound) return startIndex;
+
+    for (let i = rects.length - 1; i > startIndex; i--) {
+      if (rects[i].top > y) continue;
+      return i;
+    }
+
+    return startIndex;
+  }
+  function applyTransform(list, startIndex, oldIndex, newIndex, len) {
+    if (newIndex > oldIndex) {
+      transform(false, oldIndex, Math.min(startIndex - 1, newIndex - 1));
+
+      if (startIndex < list.length - 1) {
+        transform(true, Math.max(oldIndex + 1, startIndex + 1), newIndex, "translateY(".concat(-len, "px)"));
       }
     } else {
-      for (let i = overIndex; i >= 0; i--) {
-        if (rects[i].bottom < newY) break;
+      transform(false, Math.max(startIndex + 1, newIndex + 1), oldIndex);
 
-        if (i > startIndex && rects[i].top > newY && list[i].classList.contains('draggable-list-transformed')) {
-          list[i].classList.remove('draggable-list-transformed');
-          list[i].style = '';
-        } else if (i < startIndex && rects[i].bottom > newY && !list[i].classList.contains('draggable-list-transformed')) {
-          list[i].classList.add('draggable-list-transformed');
-          list[i].style.transform = "translateY(".concat(rects[startIndex].bottom - rects[startIndex - 1].bottom, "px)");
-        }
-
-        overIndex = i;
+      if (startIndex > 0) {
+        transform(true, newIndex, Math.min(oldIndex - 1, startIndex - 1), "translateY(".concat(len, "px)"));
       }
     }
 
-    return overIndex;
+    function transform(state, p, q, style) {
+      for (let i = p; i <= q; i++) {
+        if (state && !list[i].classList.contains(CLS_TRANSFORMED)) {
+          list[i].classList.add(CLS_TRANSFORMED);
+          list[i].style.transform = style;
+        } else if (!state && list[i].classList.contains(CLS_TRANSFORMED)) {
+          list[i].classList.remove(CLS_TRANSFORMED);
+          list[i].style = '';
+        }
+      }
+    }
   }
-  function DraggableList(el, scrollingContainer) {
+  function DraggableList(el, {
+    bound,
+    scrollContainer
+  } = {}) {
     for (const c of el.children) {
       c.draggable = true;
     }
@@ -58,12 +71,13 @@ var DraggableList = (function () {
     let rects = [];
     let dragTarget = null;
     let dropped = false;
+    let itemSize = 0;
     el.addEventListener('dragstart', e => {
       if (e.target.parentNode !== el) return;
       dragTarget = e.target;
       dropped = false;
-      const scrollLeft = scrollingContainer ? scrollingContainer.scrollLeft : 0;
-      const scrollTop = scrollingContainer ? scrollingContainer.scrollTop : 0;
+      const scrollLeft = scrollContainer ? scrollContainer.scrollLeft : 0;
+      const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
       startPos = {
         x: e.pageX + scrollLeft,
         y: e.pageY + scrollTop
@@ -78,6 +92,7 @@ var DraggableList = (function () {
           bottom: r.bottom + window.scrollY + scrollTop
         };
       });
+      itemSize = startIndex + 1 < rects.length ? rects[startIndex + 1].top - rects[startIndex].top : startIndex > 0 ? rects[startIndex].bottom - rects[startIndex - 1].bottom : 0;
       dragTarget.classList.add('draggable-list-target');
       el.classList.add('draggable-list-dragging');
       dispatch(e, 'd:dragstart');
@@ -91,13 +106,15 @@ var DraggableList = (function () {
     el.addEventListener('dragover', e => {
       if (!dragTarget) return;
       e.preventDefault();
-      const scrollLeft = scrollingContainer ? scrollingContainer.scrollLeft : 0;
-      const scrollTop = scrollingContainer ? scrollingContainer.scrollTop : 0;
+      const scrollLeft = scrollContainer ? scrollContainer.scrollLeft : 0;
+      const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
       const newPos = {
         x: e.pageX + scrollLeft,
         y: e.pageY + scrollTop
       };
-      dragOverIndex = applyDragMove(el.children, rects, startIndex, dragOverPos.y, dragOverIndex, newPos.y);
+      const newIndex = posToIndex(rects, startIndex, newPos.y, bound);
+      applyTransform(el.children, startIndex, dragOverIndex, newIndex, itemSize);
+      dragOverIndex = newIndex;
       dragOverPos = newPos;
       dispatch(e, 'd:dragmove');
     });
@@ -105,7 +122,7 @@ var DraggableList = (function () {
       if (!dragTarget) return;
 
       for (const c of el.children) {
-        c.classList.remove('draggable-list-transformed');
+        c.classList.remove(CLS_TRANSFORMED);
         c.style = '';
       }
 
