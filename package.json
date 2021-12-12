@@ -1,6 +1,6 @@
 {
   "name": "@eight04/draggable-list",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A tiny vanilla draggable list built with HTML5 drag-n-drop.",
   "author": "eight04 <eight04@gmail.com>",
   "license": "MIT",
