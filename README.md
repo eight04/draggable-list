@@ -43,10 +43,12 @@ This module exports a default member.
 ### DraggableList
 
 ```js
-new DraggableList(el: Element)
+new DraggableList(el: Element, {scrollContainer?: Element} = {})
 ```
 
 Convert an element to a draggable list.
+
+By default, the script calculates cursor position via `MouseEvent.pageY`. This won't work if the list is inside a scrollable container. Specify `scrollContainer` so it can also calculate `scrollContainer.scrollTop`.
 
 Custom Events
 -------------
@@ -85,6 +87,11 @@ e = {
 
 Changelog
 ---------
+
+* 0.3.0 (Dec 12, 2021)
+
+  - Fix: handle negative gap.
+  - Add: `scrollContainer`.
 
 * 0.2.0 (Dec 10, 2021)
 
